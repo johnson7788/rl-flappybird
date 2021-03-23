@@ -1,5 +1,5 @@
 
-# Use reinforcement learning to train a flappy bird which NEVER dies  
+# 使用强化学习来训练一只永远不死的飞鸟。 
 
 ### [Use reinforcement learning to train a flappy bird NEVER to die](https://towardsdatascience.com/use-reinforcement-learning-to-train-a-flappy-bird-never-to-die-35b9625aaecc)
 
@@ -18,13 +18,13 @@ Install **python 3.7**
 
 ## File Structure
 
-- `src/bot.py` - This file contains the `Bot` class that applies the Q-Learning logic to the game.
+- `src/bot.py` - 这个文件包含了应用Q-Learning逻辑到游戏中的`Bot`类。
 
-- `src/flappy.py` - Main program file in python, play the game or train an agent to play the game
+- `src/flappy.py` - python中的主程序文件，玩游戏或训练agent玩游戏。
 
-- `data/qvalues.json` - Q-table of state-actions in Q-Learning, start a new training by removing this file
+- `data/qvalues.json` - Q-Learning中的状态动作表，通过删除此文件开始新的训练。
 
-- `data/hitmasks_data.pkl` - Mask data to detect crash in non-UI training mode
+- `data/hitmasks_data.pkl` - 屏蔽数据以检测非UI训练模式下的崩溃。
 
 ---
 
@@ -57,13 +57,13 @@ python3 src/flappy.py [-h] [--fps FPS] [--episode EPISODE] [--ai]
 python3 src/flappy.py
 ```
 
-### Train the agent bot without UI, play 1000 times
+### 训练agent机器人不需要UI，玩1000次
 
 ``` dos
 python3 src/flappy.py --train noui --episode 1000
 ```
 
-### Train the agent bot, replay last 50 steps before crash with UI, restart a new game when the bird reach 1000 scores
+### 训练agent机器人，replay在crashed中的最后50步，当鸟儿达到1000分时，重启新游戏。 
 
 ``` dos
 python3 src/flappy.py --train replay --episode 1000 --max 1000
@@ -73,28 +73,28 @@ python3 src/flappy.py --train replay --episode 1000 --max 1000
 
 ## Achievements
 
-After long time training (10+ hours), I ran validation test with **Max Score=10M** and **Episode=2**. The game will restart once the bird reaches 10M score. This test demonstrates the trained agent can fly for a long time without any crash. Even training without UI, it still need almost 2 hours in my Mac to reach 10M scores. I only run 2 episodes in this test.
+经过长时间的训练（10多个小时），我在**最大得分=10M**，**Episode=2**的情况下进行了验证测试。一旦鸟儿达到10M分，游戏就会重新开始。这个测试证明了训练后的agent可以长时间飞行，而不会出现任何崩溃。即使在没有UI的情况下进行训练，在我的Mac中也需要近2小时才能达到10M的分数。我在这个测试中只运行了2 episodes。
 
 <p align="center">
 <img src="res/episode_2_max_10M.png" width="430">&nbsp; &nbsp;
 <img src="res/episode_2_max_10M_2.png" width="500"><br>
 <b>Total episode: 2, Max score: 10,000,000</b></p>  
 
-From start point to the first pipe, the bird will fly a long distance without any obstacles, the states before the first pipe won't be same as the following training, the next test demonstrates the trained agent deals with the beginning of the journey perfectly. Setting **Max Score=10** and **Episode=100,000**, the agent passed the test without any failure.
+从起点到第一个柱子，鸟儿会在没有任何障碍物的情况下飞很长一段距离，第一根柱子前的状态不会和下面的训练一样，接下来的测试证明训练过的agent完美的处理了开始的旅程。设置**最大得分=10**，**episode=100000**，agent顺利通过测试。
 
 <p align="center">
 <img src="res/episode_100K_max_10_1.png" width="430">&nbsp; &nbsp;
 <img src="res/episode_100K_max_10_2.png" width="500"><br>
 <b>Total episode: 100,000, Max score: 10</b></p>  
 
-The 3rd test demonstrates the stability and reproducibility for any of the game. In this test, **Max Score=10,000** and **Episode=2,000**, the trained agent also passed without any failure.  
+第3次测试证明了任何一款游戏的稳定性和可重复性。在本次测试中，**最大得分=10000**，**episode=2000**，经过训练的agent也顺利通过。
 
 <p align="center">
 <img src="res/episode_2K_max_10K_1.png" width="430">&nbsp; &nbsp;
 <img src="res/episode_2K_max_10K_2.png" width="490"><br>
 <b>Total episode: 2,000, Max score: 10,000</b></p>
 
-I did final test to see how many score the bird could fly, just for curious. I set **Max Score=50,000,000** for only **One Episode**.  
+我做了最后的测试，看看鸟儿能飞多少分，只是为了好奇。我设置了**最大得分=50000000**，只有一个Episode。
 
 <p align="center">
 <img src="res/50M_Score.png" width="600"></p>
@@ -109,14 +109,14 @@ I did final test to see how many score the bird could fly, just for curious. I s
 
 Thanks [Cihan Ceyhan](https://github.com/chncyhn/flappybird-qlearning-bot) for providing a good example to start with. And much appreciated of [Sarvagya Vaish](https://github.com/SarvagyaVaish) explaining the theory in details [here](https://sarvagyavaish.github.io/FlappyBirdRL/).
 
-In [Cihan Ceyhan](https://github.com/chncyhn/flappybird-qlearning-bot)'s code, the trained agent can reach over 5000 scores as following:
+在[Cihan Ceyhan](https://github.com/chncyhn/flappybird-qlearning-bot)的代码中，训练后的agent可以达到5000分以上，如下图。
 
 <p align="center">
 <img src="https://camo.githubusercontent.com/acc74a82be4f1a06bb3ee87dc68b57459f9d3613/687474703a2f2f692e696d6775722e636f6d2f45335679304f522e706e67" width="500"><br>
 <a href="https://github.com/chncyhn/flappybird-qlearning-bot">Source: Flappy Bird Bot using Reinforcement Learning</a>
 </p>  
 
-However, as you can see, the bird can't reach a high score in each game, it may crash at any score. It's not stable enough.
+不过大家也看到了，小鸟在每一局中都不能达到很高的分数，可能在任何分数都会崩溃。不够稳定。
 
 ### Is it possible to train a bird never to die in any game?
 
@@ -126,65 +126,65 @@ However, as you can see, the bird can't reach a high score in each game, it may 
 
 ### State Space
 
-In [Sarvagya](https://github.com/SarvagyaVaish)'s post, he defined three dimensions to represent one state:  
+In [Sarvagya](https://github.com/SarvagyaVaish)'s post, 他定义了三个维度来表示一个状态。
 
-- **X** - Horizontal distance to next pipe
-- **Y** - Vertical distance to next pipe
-- **V** - Current velocity of the bird
+- **X** - 到下一个管道的水平距离
+- **Y** - 到下一个管道的垂直距离
+- **V** - 鸟儿的当前速度
 
-In [Cihan Ceyhan](https://github.com/chncyhn/flappybird-qlearning-bot)'s code, if bird enters tunnel more than 30 pixels(pipe width=52px), the bird will move the eyes to next pipe. However, it may cause conflict result to the Q-table. For the same X, Y, V(to the next pipe), if the bird's current position is close to the edge part of current pipe(in red), the bird may crash in the tunnel which is transparent to the bird at that time.
+在[Cihan Ceyhan](https://github.com/chncyhn/flappybird-qlearning-bot)的代码中，如果鸟儿进入隧道超过30个像素(pipe宽度=52px)，鸟儿就会把眼睛移动到下一个pipe。但是，这可能会导致Q表的冲突结果。同样的X、Y、V（到下一个pipe），如果鸟儿的当前位置接近当前pipe的边部分（红色），鸟儿可能会坠入对鸟儿透明的隧道。
 
 <p align="center">
 <img src="res/X_Y_Distance.png" width="250">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  
 <img src="res/Blind_In_Tunnel.png" width="250">
 </p>
 
-I added the 4th dimension in the state:
+我在状态中增加了第四个维度。
 
-- **`Y1`** - the vertical distance between next two pipes, it helps bird to take action in advance according to the height difference of two consecutive pipes. This value is only used when the bird enters the tunnel part. It can reduce the state space.
+- **`Y1`** - 是指下两根管子之间的垂直距离，根据连续两根管子的高度差，帮助鸟类提前采取行动。该值只在鸟类进入隧道部分时使用。它可以减少状态空间。
 
-Furthermore, the bird still can perceive the current pipe until 50 pixels long in the tunnel. After that, the bird almost flies out of the tunnel. The pipe just passed can't impact the bird any longer. It's time to focus on next pipe.
+此外，鸟儿在隧道内50个像素长之前，仍然可以感知到当前的pipe。之后，鸟儿几乎飞出了隧道。刚刚通过的pipe已经无法影响到鸟儿了。是时候关注下一条pipe了。
 
 <p align="center"><img src="res/X_Y_y1_distance.png" width="250"></p>
 
 ### Rewards in Q-learning  
 
-With the above improvement, the bird can easily fly to 10000 scores. However, it's still not stable, there are many failures before reaching 10000 scores.
+经过以上改进，小鸟可以轻松飞到10000分。但是，还是不稳定，在达到10000分之前，会有很多失败。
 
-As explained by [Sarvagya](https://github.com/SarvagyaVaish), the bot gets **+1** reward of alive for each step, while gets **-1000** reward if dead. It works well in most scenarios.
+正如[Sarvagya](https://github.com/SarvagyaVaish)所解释的那样，机器人每走一步都会得到**+1**的活着的奖励，而如果死了则会得到**-1000**的奖励。这在大多数情况下都很好用。
 
-Let's look at the following scenario. The next pipe has a huge drop from the previous one, the maximum vertical drop is 142px between two pipes in the game. Considering the bird is in the position showing in the example, if the bird is falling and want to pass through these two pipes successfully, it may take *route 1* or *route 2*, but neither of them can go through the next pipe successfully. It may work in most of scenarios if the vertical difference doesn't not reach the maximum drop. Refer to the right screenshot.
+我们来看看下面的场景。下一个pipe比上一个pipe有很大的落差，游戏中两个pipe之间的最大垂直落差是142px。考虑到小鸟处于例子中显示的位置，如果小鸟在下落，想要成功通过这两个pipe，可能会走*路线1*或者*路线2*，但都不能成功通过下一个pipe。如果垂直落差没有达到最大落差的话，可能在大多数情况下都能成功。参考右图截图。
 
 <p align="center">
 <img src="res/Crash_at_high_pipe.png" width="250">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;  
 <img src="res/get_through_at_normal_case.png" width="250">
 </p>
 
-We train the bird for million of times, and the bird accumulates a large number of positive value of that position. The worst case is a quite low-occurrence event, even there is once a case leading to crash, **it only minus 1000 rewards**. The remaining value is still a big positive value or the bird can easily to gain another 1000 rewards from successful training sessions. So the bird will crash again once it encounters the similar situation.
+我们对鸟儿进行百万次训练，鸟儿积累了大量该位置的正值。最坏的情况是相当低的发生率，即使有一次导致崩溃的情况，**也只是减去1000个奖励**。剩余的数值仍然是一个很大的正值，或者说鸟儿可以很容易地从成功的训练中再获得1000个奖励。所以鸟儿一旦遇到类似的情况就会再次坠毁。
 
-**`I changed the reward of alive from 1 to 0`**, it forces the bird to focus on the long term alive, to keep away from any action causing death. It will get penalty of -1000 rewards on death no matter how many successful sessions the bird ran in the past.
+**`我把活着的奖励从1改成了0`**，这就迫使鸟儿专注于长期活着，远离任何导致死亡的行动。无论鸟儿过去成功跑了多少次，死亡时都会受到-1000奖励的惩罚。
 
-**After this improvement, it greatly increases the stability.**
+**经过这次改进后，大大提高了稳定性。
 
 ### Resume Game from Death
 
-It's rare chance to encounter the worst cases. In other words, the bird doesn't have enough training sessions on these cases. It may encounter once, but next time, it won't encounter the similar scenario. It may take a long time to happen again.
+很少遇到最坏的情况。换句话说，这只鸟对这些情况的训练次数不够。它可能遇到一次，但下一次，它不会遇到类似的情况。可能要花很长时间才能再次发生。
 
-It's not ideal for training. I recorded the last 50 steps of the bird journey in real time, **`the game can resume from the last 50 steps before the crash`**. It's a great help to traverse all the possible states in a short time.
+这对训练的来说是不理想的。我实时记录了小鸟旅程的最后50步，**`游戏可以从崩溃前的最后50步开始恢复`**。这对在短时间内穿越所有可能的状态有很大的帮助。
 
-Let's take the previous case as an example. The bird is in the falling state when entering the tunnel, no matter it takes *route 1* or *route 2* or any other route, it may still crash on next pipe. The game restarts from this point, it may try other action and dies. Restart game again until the bird finds it shall be in a rising state to enter this case. Then it can go through any scenario including worst case.
+我们以前面的案例为例。小鸟在进入隧道时处于下降状态，无论它走*路线1*还是*路线2*或其他路线，都有可能在下一个管道上坠落，这时游戏重新开始，它可能会尝试其他动作而死亡。游戏从这时开始重启，它可能会尝试其他行动而死亡。再次重启游戏，直到鸟儿发现它应在上升状态下进入这个情况。然后，它可以通过任何情况，包括最坏的情况。
 
 <p align="center"><img src="res/Correct_trajectory_at_high_pipe.png" width="250"></p>
 
-### Memory Issue
+### 内存问题
 
-In `Bot` class, it saves state information for each movement which is used to update Q-table once the bird dies.
+在 "Bot "类中，它保存了每次移动的状态信息，一旦鸟儿死亡，它就会用来更新Q表。
 
-It consumes a lot of memory when bird reaches several millions scores. It also slows down the training speed.
+当鸟儿达到几百万分的时候，会消耗大量的内存。同时也降低了训练速度。
 
 <p align="center"><img src="res/memory_before.png" width="500"></p>
 
-Every 5 million steps which equivalent to around 139,000 of scores, I update Q-table then reduce the array list. I still leave 1 million steps buffer to avoid impact to the bird in case the bird crash right after 6 million steps.
+每走500万步，相当于139,000个分数，我就更新Q表，然后减少array列表。我仍然留有100万步的缓冲区，以避免鸟儿在600万步后崩溃。
 
 ```python
 def save_qvalues(self):
@@ -196,23 +196,23 @@ def save_qvalues(self):
         self.moves = self.moves[5_000_000:]
 ```
 
-After the change, the maximum memory consumption is around 1GB, much less than before.
+改动后，最大内存消耗在1GB左右，比之前少了很多。
 
 <p align="center"><img src="res/memory_after.png" width="500"></p>
 
 ### Q-table Initialization
 
-In the original solution, it need a separate step to initialize the q-table and it also includes a lot of states which the bird never experience.
+在原方案中，它需要一个单独的步骤来初始化q表，而且它还包含了很多鸟儿从未经历过的状态。
 
-In my solution, the state is only initialized if the bird experiences a new state. So Q-table only contains the states which the bird ever experienced. And it doesn't need a separate step to initialize the Q-table first.
+在我的解决方案中，只有当鸟儿经历了一个新的状态时，状态才会被初始化。所以Q表只包含鸟儿曾经经历过的状态。而且不需要单独的步骤来先初始化Q-table。
 
-To start a new training from scratch, it only needs remove the `qvalues.json` file under `data/` folder.
+如果要从头开始一个新的训练，只需要删除`data/`文件夹下的`qvalues.json`文件即可。
 
 ---
 
-## Steps to Train a Bird Which Never Dies
+## 训练一只永不死的鸟的步骤
 
-1. Set **Max score = 10K**, **Episode = 15K**, enable **resume** mode
+1. 设置 **Max score = 10K**, **Episode = 15K**, enable **resume** mode
 
 ``` dos
 python3 src/flappy.py --train noui --episode 15000 --max 10000 --resume
@@ -228,14 +228,14 @@ python3 src/flappy.py --train noui --episode 15000 --max 10 --resume
 
 <p align="center"><img src="res/episode_15K_max_10.png" width="500"></p>  
 
-3. Repeat *`step 1`* and *`step 2`* alternatively until almost all the episodes end at desired maximum scores.
+3. 交替重复*`步骤1`*和*`步骤2`*，直到几乎所有的episodes都以理想的最高分结束。
 
 <p align="center">
 <img src="res/episode_1K_max_10K.png" width="400">
 <img src="res/episode_100K_max_10.png" width="400">
 </p>
 
-4. Set higher **Max score = 10M**, **Episode = 1000**, enable **resume** mode, until it can reach 10M maximum score.
+4. 设置更高的**最大得分=10M**，**episode=1000**，启用**resume**模式，直到能达到10M的最大得分。
 
 ``` dos
 python3 src/flappy.py --train noui --episode 1000 --resume
@@ -243,7 +243,7 @@ python3 src/flappy.py --train noui --episode 1000 --resume
 
 <p align="center"><img src="res/episode_2_max_10M_1.png" width="500"></p>  
 
-5. It may take 10+ hours to train a bird to a perfect state from scratch. Validate the AI bot without **resume** option, it will 3x faster. It costs about 2 hours to reach 10M scores in my Mac. If bird still encounters crash at the beginning phase, try to train more episodes in *`step 2`*. If bird crashes in the latter phase, try to train more in *`step 1`*.
+5. 从头开始训练一只鸟到完美状态可能需要10多个小时。验证AI机器人没有**resume**选项，会快3倍。在我的Mac中达到10M的分数大约需要2小时。如果鸟儿在开始阶段一直遇到崩溃，请尝试在*`步骤2`*中训练更多的episode。如果鸟在后面阶段崩溃，尝试在*`步骤1`*中训练更多的episode。
 
 ---
 
