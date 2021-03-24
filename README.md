@@ -9,7 +9,7 @@
 
 ---
 
-## Dependencies
+## 依赖包
 
 Install **pygame 1.9.6** package first  
 Install **python 3.7**
