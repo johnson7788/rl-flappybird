@@ -28,7 +28,7 @@ Install **python 3.7**
 
 ---
 
-## How to Run
+## 运行方法
 
 ``` dos
 python3 src/flappy.py [-h] [--fps FPS] [--episode EPISODE] [--ai]
@@ -36,20 +36,18 @@ python3 src/flappy.py [-h] [--fps FPS] [--episode EPISODE] [--ai]
                       [--max MAX] [--dump_hitmasks]
 ```
 
-- `-h, --help` : Show usage formation
-- `--fps FPS` : number of frames per second, default value:
-  - User play or normal training mode with UI: `25`
-  - Replay training mode: `20`
-  - AI play mode: `60`
-- `--episode EPISODE` : Training episode number, default: 10,000
-- `--ai` : AI play mode
-- `--train {normal,noui,replay}` : Training mode:
-  - `normal` : Normal training mode with UI
-  - `noui` : Training without UI, fastest training mode
-  - `replay` : Training without UI, replay game with UI from last 50 steps once the bird crashes, it provides a visual way to check how bird crashed.
-- `--resume` : Resume game from last 50 steps before crash, it's useful to correct flying trajectory for rare scenario. But it's 3x slower than normal mode. When in replay training mode, this option is enabled automatically.  
-- `--max MAX` : Maxium score per episode, restart game if agent reach this score, default: 10,000,000
-- `--dump_hitmasks` : dump hitmasks to file and exit
+
+  -h, --help            show this help message and exit
+  --fps FPS             每秒帧数，正常模式下默认值：25，Replay模式是20帧，AI玩游戏模式：60
+  --episode EPISODE     episode 数量，默认值：10000
+  --ai                  是否用AI agent玩游戏
+  --train {normal,noui,replay}      训练模式： 训练AI agent玩游戏，从“replay”模式下的最后50步replay游戏
+      - `normal` : 使用UI的正常训练模式， 
+      - `noui` : 没有UI的训练，训练模式最快 
+      - `replay` : 没有UI的训练，从最后50步开始replay游戏一旦鸟崩溃，它提供了一种视觉方式来检查鸟如何崩溃的。 
+  --resume              在崩溃前从最后50步恢复游戏, 对于罕见的情况下修正飞行轨迹很有用。但它比普通模式慢了3倍。在replay训练模式下，这个选项会自动启用。
+  --max MAX             每个episode的最大分数，重启游戏如果agent达到此分数，则默认：10,000,000分
+  --dump_hitmasks       将HitMasks转储到文件并退出
 
 ### Play game in user mode
 

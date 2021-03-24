@@ -21,20 +21,22 @@ class Mode(Enum):
 
 from bot import Bot
 
-# Initialize the bot
+# 初始化bot
 bot = Bot()
-
+# 屏幕尺寸
 SCREENWIDTH = 288
 SCREENHEIGHT = 512
-# amount by which base can maximum shift to left
-PIPEGAPSIZE = 100  # gap between upper and lower part of pipe
+# base是地面
+# 管道上部和下部之间的间隙
+PIPEGAPSIZE = 100
 BASEY = SCREENHEIGHT * 0.79
-# image, sound and hitmask  dicts
+# 图像，声音和hitmask  dicts
 IMAGES, SOUNDS, HITMASKS = {}, {}, {}
-# Set init mode
+# 设置init模式
 MODE = Mode.NORMAL
 
-# list of all possible players (tuple of 3 positions of flap)
+# 所有可能的玩家列表（3个flap的3个位置）
+
 PLAYERS_LIST = (
     # red bird
     (
@@ -57,13 +59,13 @@ PLAYERS_LIST = (
     ),
 )
 
-# list of backgrounds
+# 所有的背景
 BACKGROUNDS_LIST = (
     "data/assets/sprites/background-day.png",
     "data/assets/sprites/background-night.png",
 )
 
-# list of pipes
+# 有红色和绿色的管道
 PIPES_LIST = ("data/assets/sprites/pipe-green.png", "data/assets/sprites/pipe-red.png")
 
 # image, Width, Height
@@ -89,13 +91,13 @@ def main():
     global HITMASKS, SCREEN, FPSCLOCK, FPS, bot, MODE, SCORES, EPISODE, MAX_SCORE, RESUME_ONCRASH
 
     parser = argparse.ArgumentParser("flappy.py")
-    parser.add_argument("--fps", type=int, default=60, help="number of frames per second, default in normal mode: 25, training or AI mode: 60")
-    parser.add_argument("--episode", type=int, default=10000, help="episode number, default: 10000")
-    parser.add_argument("--ai", action="store_true", help="use AI agent to play game")
-    parser.add_argument("--train", action="store", choices=('normal', 'noui', 'replay'), help="train AI agent to play game, replay game from last 50 steps in 'replay' mode")
-    parser.add_argument("--resume", action="store_true", help="Resume game from last 50 steps before crash")
-    parser.add_argument("--max", type=int, default=10_000_000, help="maxium score per episode, restart game if agent reach this score, default: 10M")
-    parser.add_argument("--dump_hitmasks", action="store_true", help="dump hitmasks to file and exit")
+    parser.add_argument("--fps", type=int, default=60, help="每秒帧数，正常模式下默认值：25，Replay模式是20帧，AI玩游戏模式：60 ")
+    parser.add_argument("--episode", type=int, default=10000, help="episode 数量，默认值：10000 ")
+    parser.add_argument("--ai", action="store_true", help="是否用AI agent玩游戏 ")
+    parser.add_argument("--train", action="store", default='normal', choices=('normal', 'noui', 'replay'), help="训练AI agent玩游戏，从“replay”模式下的最后50步replay游戏 ")
+    parser.add_argument("--resume", action="store_true", help="在崩溃前从最后50步恢复游戏, 对于罕见的情况下修正飞行轨迹很有用。但它比普通模式慢了3倍。在replay训练模式下，这个选项会自动启用。")
+    parser.add_argument("--max", type=int, default=10_000_000, help="每个episode的最大分数，重启游戏如果agent达到此分数，则默认：10,000,000分")
+    parser.add_argument("--dump_hitmasks", action="store_true", help="将HitMasks转储到文件并退出 ")
     args = parser.parse_args()
 
     FPS = args.fps
