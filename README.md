@@ -16,7 +16,7 @@ Install **python 3.7**
 
 ---
 
-## File Structure
+## 文件架构
 
 - `src/bot.py` - 这个文件包含了应用Q-Learning逻辑到游戏中的`Bot`类。
 
