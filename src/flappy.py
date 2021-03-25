@@ -5,6 +5,7 @@ import os
 import argparse
 import pickle
 import datetime
+import wandb
 
 import pygame
 from pygame.locals import *
@@ -100,12 +101,16 @@ def main():
     parser.add_argument("--resume", action="store_true", help="在崩溃前从最后50步恢复游戏, 对于罕见的情况下修正飞行轨迹很有用。但它比普通模式慢了3倍。在replay训练模式下，这个选项会自动启用。")
     parser.add_argument("--max", type=int, default=10_000_000, help="每个episode的最大分数，重启游戏如果agent达到此分数，则默认：10,000,000分")
     parser.add_argument("--dump_hitmasks", action="store_true", help="将HitMasks转储到文件并退出程序，只做这一件事, hitmask,即物体的像素的形状的bool值")
+    parser.add_argument("--wandb", action="store_true", help="是否用wandb记录参数")
     args = parser.parse_args()
 
     FPS = args.fps
     EPISODE = args.episode
     MAX_SCORE = args.max
     RESUME_ONCRASH = args.resume
+    if args.wandb:
+        wandb.init(project='flappy_bird')
+        config = wandb.config
     if args.ai:
         MODE = Mode.PLAYER_AI
     elif args.train == "noui":
@@ -119,6 +124,15 @@ def main():
     else:
         MODE = Mode.NORMAL
         FPS = 25
+
+    if args.wandb:
+        global usewandb
+        usewandb = args.wandb
+        config.fps = FPS
+        config.episode = EPISODE
+        config.max_score = MAX_SCORE
+        config.resume_oncrash = RESUME_ONCRASH
+        config.mode = MODE
 
     if MODE == Mode.TRAIN_NOUI:
         # load dumped HITMASKS
@@ -406,6 +420,9 @@ def mainGame(movementInfo):
                     if len(stateHistory) > 50:
                         stateHistory.pop(0)
             #当不是用户玩游戏的模式时，我们然机器人操作小鸟，playerx: 57, playery: 244, playerVelY: -9，在Y方向的速度, lowerPipes: [{'x': 488, 'y': 216}, {'x': 632.0, 'y': 210}]下方管道
+            if usewandb:
+                wandb.log({"steps":steps,"playerx":playerx, "playery":playery, "playerVelY":playerVelY })
+            # playerx 方向基本不动，因为一直在屏幕中央, y方向上下变化，y方向的速度也在变化
             if MODE != Mode.NORMAL and bot.act(playerx, playery, playerVelY, lowerPipes):
                 if playery > -2 * IMAGES_INFO["player"][0][HEIGHT]:
                     playerVelY = playerFlapAcc
