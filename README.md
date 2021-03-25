@@ -47,7 +47,7 @@ python3 src/flappy.py [-h] [--fps FPS] [--episode EPISODE] [--ai]
       - `replay` : 没有UI的训练，从最后50步开始replay游戏一旦鸟崩溃，它提供了一种视觉方式来检查鸟如何崩溃的。 
   --resume              在崩溃前从最后50步恢复游戏, 对于罕见的情况下修正飞行轨迹很有用。但它比普通模式慢了3倍。在replay训练模式下，这个选项会自动启用。
   --max MAX             每个episode的最大分数，重启游戏如果agent达到此分数，则默认：10,000,000分
-  --dump_hitmasks       将HitMasks转储到文件并退出
+  --dump_hitmasks       将HitMasks转储到文件并退出程序，只做这一件事, hitmask,即物体的像素的形状的bool值
 
 ### Play game in user mode
 

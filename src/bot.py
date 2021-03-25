@@ -4,30 +4,35 @@ import random
 
 class Bot(object):
     """
-    The Bot class that applies the Qlearning logic to Flappy bird game
-    After every iteration (iteration = 1 game that ends with the bird dying) updates Q values
+    将Qlearning逻辑应用到Flappy bird游戏的Bot类。
+    每次迭代后（迭代=1, 以鸟儿死亡结束的游戏）更新Q值。
     """
 
     def __init__(self):
-        self.gameCNT = 0  # Game count of current run, incremented after every death
-        self.discount = 1.0
-        self.r = {0: 0, 1: -1000}  # Reward function
-        self.lr = 0.7
-        self.load_qvalues()
-        self.last_state = "0_0_0_0" # initial position, MUST NOT be one of any other possible state
+        self.gameCNT = 0  # 当前运行的游戏次数，每次死亡后递增。
+        self.discount = 1.0  #折扣因子
+        self.r = {0: 0, 1: -1000}  # 奖励函数
+        self.lr = 0.7   #学习率
+        self.load_qvalues()  #从json文件加载q值
+        self.last_state = "0_0_0_0" # 初始位置，必须不是任何其他可能的状态之一。
         self.initStateIfNull(self.last_state)
         self.last_action = 0
         self.moves = []
+        #是否显示更多日志
+        self.verbose = True
 
     def load_qvalues(self):
         """
-        Load q values from a JSON file
+        从JSON文件中加载q值
         """
-        self.qvalues = {}
+        self.qvalues = {}  # 加载的q值是个dict，里面包含31326个元素
         try:
             fil = open("data/qvalues.json", "r")
         except IOError:
             return
+        #注意qvalues中代表的意思，例如一个元素 '420_-20_-9_0': [-455.5245159900492, -487.06834829873003, 214]
+        # key表示的是一种小鸟此时状态，代表小鸟此时左上角x距离管道0x的距离是420， 小鸟的y于管道0的y的距离是-20，小鸟的垂直方向的速度是-9，小鸟y于管道1的距离是0
+        # 值的3个元素表示的意思是小鸟的
         self.qvalues = json.load(fil)
         fil.close()
 
@@ -44,21 +49,27 @@ class Bot(object):
 
     def act(self, x, y, vel, pipe):
         """
-        Chooses the best action with respect to the current state - Chooses 0 (don't flap) to tie-break
+        选择关于当前状态的最佳行动 - 选择0（不要flap）以tie-break
+        :param x: 小鸟的左上角的x
+        :param y: 小鸟的左上角的y
+        :param vel: 小鸟的垂直方向的速度
+        :param pipe: 所有的管道位置
+        :return: int 返回一个行动，0或1，表示飞或不飞
         """
+        # eg:state: string:  '420_-30_-9_0' , 小鸟的x坐标和管道0的x坐标的差值, y的差值，y方向上小鸟的速度，pipe表示小鸟y方向上和pip1的差值
         state = self.get_state(x, y, vel, pipe)
-
+        # 将经验添加到历史记录中
         self.moves.append(
             (self.last_state, self.last_action, state)
-        )  # Add the experience to the history
- 
+        )
+        # 大于600万步时报错下q table
         self.save_qvalues()
-        
+        #根据当前的状态采取行动，行动一共2种，飞或不飞
         action = 0 if self.qvalues[state][0] >= self.qvalues[state][1] else 1
-
-        self.last_state = state  # Update the last_state with the current state
+        #使用当前状态更新Last_State
+        self.last_state = state  #
         self.last_action = action
-        #print("%s -> %d" % (state, action))
+        print(f"当前的state是: {state}, 当前采取的行动是{action}")
         return action
 
     def initStateIfNull(self, state):
@@ -70,8 +81,11 @@ class Bot(object):
              if num > 30000:
                 print("======== New state: {0:14s}, Total: {1} ========".format(state, num))
 
-    # terminate game and save q-values, the bird is still alive
     def terminate_game(self):
+        """
+        终止游戏并保存Q值，鸟儿还活着。
+        :return:
+        """
         history = list(reversed(self.moves))
         for exp in history:
             state, act, new_state = exp
@@ -82,24 +96,33 @@ class Bot(object):
         self.moves = []
         self.gameCNT += 1
 
-    # save q-values during the game, the bird is still alive, just to reduce the memory consumption
     def save_qvalues(self):
+        """
+            在游戏过程中保存Q值，鸟类仍然活着，只是为了减少内存消耗
+        :return:
+        """
         if len(self.moves) > 6_000_000:
+            #历史记录，选取最后500万条状态记录，翻转后使用
             history = list(reversed(self.moves[:5_000_000]))
+            #递归每个记录
             for exp in history:
+                #上一个状态，上一个行动，产生的新的状态
                 state, act, new_state = exp
+                #self.r 是奖励函数，self.discount是折扣因子
                 self.qvalues[state][act] = (1-self.lr) * self.qvalues[state][act] + \
                                        self.lr * ( self.r[0] + self.discount*max(self.qvalues[new_state][0:2]) )
             self.moves = self.moves[5_000_000:]
 
     def update_scores(self, printLogs=False):
         """
-        Update qvalues via iterating over experiences
+        通过对经验的迭代更新q值。
+        :param printLogs:
+        :return:
         """
         history = list(reversed(self.moves))
 
         # Q-learning score updates
-        # Flag if the bird died in the top pipe
+        # 如果鸟儿在top管管中死亡，则flag为True，即碰到了上面的管道
         high_death_flag = True if int(history[0][2].split("_")[1]) > 120 else False
 
         t = 0
@@ -130,18 +153,20 @@ class Bot(object):
         printLogs = False
         if printLogs: self.showSteps(self.moves)
         self.gameCNT += 1  # increase game count
-        self.moves = []  # clear history after updating strategies
+        # 更新策略后清除历史记录
+        self.moves = []
 
     def get_state(self, x, y, vel, pipe):
         """
         format:
-            x0_y0_v_y1
+            x0_y0_v_y1,  eg: 组成这个'420_-30_-9_0'，然后用initStateIfNull初始化
 
-        (x, y): coordinates of player (top left point)
-        x0: diff of x to pipe0, [-50, ...]
+        (x, y): 小鸟的坐标，左上角的点的坐标
+        x0: 小鸟的x坐标和管道0的x坐标的差值 [-50, ...]
         y0: diff of y to pipe0
         v: current velocity
-        y1: diff of y to pipe1
+        y1: pip1的y和小鸟的y的差值
+        :return:
         """
         pipe0 = pipe[0]
         pipe1 = pipe[1]
@@ -174,7 +199,7 @@ class Bot(object):
             y1 = int(y1) - (int(y1) % 10)
         else:
             y1 = int(y1) - (int(y1) % 60)
-
+        # '420_-30_-9_0'
         state = str(int(x0)) + "_" + str(int(y0)) + "_" + str(int(vel)) + "_" + str(int(y1))
         self.initStateIfNull(state)
         return state
@@ -182,7 +207,9 @@ class Bot(object):
 
     def dump_qvalues(self, force=False):
         """
-        Dump the qvalues to the JSON file
+        将q值转储到JSON文件中。
+        :param force:
+        :return:
         """
         if force:
             print("******** Saving Q-table(%d keys) to local file... ********" % len(self.qvalues.keys()))

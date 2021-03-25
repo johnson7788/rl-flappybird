@@ -12,12 +12,13 @@ from pygame.locals import *
 sys.path.append(os.getcwd())
 
 from enum import Enum
+#以下模式中，我们根据arguments只会选择一个
 class Mode(Enum):
-    NORMAL = 1
-    PLAYER_AI = 2
-    TRAIN = 3
-    TRAIN_NOUI = 4
-    TRAIN_REPLAY = 5
+    NORMAL = 1   #初始模式
+    PLAYER_AI = 2  #用AI玩游戏
+    TRAIN = 3   # 有UI的方式训练
+    TRAIN_NOUI = 4   #训练模式中，没有UI的方式训练
+    TRAIN_REPLAY = 5  #REPLAY的模式训练
 
 from bot import Bot
 
@@ -26,16 +27,16 @@ bot = Bot()
 # 屏幕尺寸
 SCREENWIDTH = 288
 SCREENHEIGHT = 512
-# base是地面
 # 管道上部和下部之间的间隙
 PIPEGAPSIZE = 100
+# base是地面, 计算地面的高度
 BASEY = SCREENHEIGHT * 0.79
 # 图像，声音和hitmask  dicts
 IMAGES, SOUNDS, HITMASKS = {}, {}, {}
-# 设置init模式
+# 设置init模式, MODE这里为1
 MODE = Mode.NORMAL
 
-# 所有可能的玩家列表（3个flap的3个位置）
+# 所有可能的玩家列表（3个flap的3个位置）, 3个鸟，不同颜色，每个鸟分为3种姿势，翅膀在上面，中间，下面
 
 PLAYERS_LIST = (
     # red bird
@@ -71,9 +72,10 @@ PIPES_LIST = ("data/assets/sprites/pipe-green.png", "data/assets/sprites/pipe-re
 # image, Width, Height
 WIDTH = 0
 HEIGHT = 1
+#各种尺寸
 IMAGES_INFO = {}
-IMAGES_INFO["player"] = ([34, 24], [34, 24], [34, 24])
-IMAGES_INFO["pipe"] = [52, 320]
+IMAGES_INFO["player"] = ([34, 24], [34, 24], [34, 24])  #3种颜色的小鸟的尺寸
+IMAGES_INFO["pipe"] = [52, 320]   #管道的尺寸
 IMAGES_INFO["base"] = [336, 112]
 IMAGES_INFO["background"] = [288, 512]
 
@@ -84,7 +86,7 @@ RESUME_ONCRASH = False
 
 def getNextUpdateTime():
     return datetime.datetime.now() + datetime.timedelta(minutes = 5)
-
+# 时间 2021-03-24 11:04:37.321958
 NEXT_UPDATE_TIME = getNextUpdateTime()
 
 def main():
@@ -97,7 +99,7 @@ def main():
     parser.add_argument("--train", action="store", default='normal', choices=('normal', 'noui', 'replay'), help="训练AI agent玩游戏，从“replay”模式下的最后50步replay游戏 ")
     parser.add_argument("--resume", action="store_true", help="在崩溃前从最后50步恢复游戏, 对于罕见的情况下修正飞行轨迹很有用。但它比普通模式慢了3倍。在replay训练模式下，这个选项会自动启用。")
     parser.add_argument("--max", type=int, default=10_000_000, help="每个episode的最大分数，重启游戏如果agent达到此分数，则默认：10,000,000分")
-    parser.add_argument("--dump_hitmasks", action="store_true", help="将HitMasks转储到文件并退出 ")
+    parser.add_argument("--dump_hitmasks", action="store_true", help="将HitMasks转储到文件并退出程序，只做这一件事, hitmask,即物体的像素的形状的bool值")
     args = parser.parse_args()
 
     FPS = args.fps
@@ -123,12 +125,16 @@ def main():
         with open("data/hitmasks_data.pkl", "rb") as input:
             HITMASKS = pickle.load(input)
     else:
+        # 初始化一个游戏
         pygame.init()
+        #  <Clock(fps=0.00)>
         FPSCLOCK = pygame.time.Clock()
+        #这是屏幕的宽度和高度
         SCREEN = pygame.display.set_mode((SCREENWIDTH, SCREENHEIGHT))
+        #设置游戏的名字
         pygame.display.set_caption("Flappy Bird")
 
-        # numbers sprites for score display
+        # 数字精灵，用于显示分数
         IMAGES["numbers"] = (
             pygame.image.load("data/assets/sprites/0.png").convert_alpha(),
             pygame.image.load("data/assets/sprites/1.png").convert_alpha(),
@@ -142,19 +148,19 @@ def main():
             pygame.image.load("data/assets/sprites/9.png").convert_alpha(),
         )
 
-        # game over sprite
+        # 游戏结束时的图像
         IMAGES["gameover"] = pygame.image.load("data/assets/sprites/gameover.png").convert_alpha()
-        # message sprite for welcome screen
+        # 游戏开始时的welcome界面
         IMAGES["message"] = pygame.image.load("data/assets/sprites/message.png").convert_alpha()
-        # base (ground) sprite
+        # 游戏的地面 base (ground)
         IMAGES["base"] = pygame.image.load("data/assets/sprites/base.png").convert_alpha()
 
-        # sounds
+        # 游戏的声音
         if "win" in sys.platform:
             soundExt = ".wav"
         else:
             soundExt = ".ogg"
-
+        #不同的声音
         SOUNDS["die"] = pygame.mixer.Sound("data/assets/audio/die" + soundExt)
         SOUNDS["hit"] = pygame.mixer.Sound("data/assets/audio/hit" + soundExt)
         SOUNDS["point"] = pygame.mixer.Sound("data/assets/audio/point" + soundExt)
@@ -163,29 +169,31 @@ def main():
 
     while True:
         if MODE != Mode.TRAIN_NOUI:
-            # select random background sprites
+            # 如果不是NO UI的训练模式，那么随机选择一个背景
             randBg = random.randint(0, len(BACKGROUNDS_LIST) - 1)
+            # eg: <Surface(288x512x32 SW)>
             IMAGES["background"] = pygame.image.load(BACKGROUNDS_LIST[randBg]).convert()
 
-            # select random player sprites
+            #随机选择一种颜色的小鸟, eg: randPlayer: 1
             randPlayer = random.randint(0, len(PLAYERS_LIST) - 1)
+            #设置选中的小鸟的三种飞行姿势
             IMAGES["player"] = (
                 pygame.image.load(PLAYERS_LIST[randPlayer][0]).convert_alpha(),
                 pygame.image.load(PLAYERS_LIST[randPlayer][1]).convert_alpha(),
                 pygame.image.load(PLAYERS_LIST[randPlayer][2]).convert_alpha(),
             )
 
-            # select random pipe sprites
+            #随机选择一个管道, 管道变成2个，一个是正的，一个是旋转180度后倒立的
             pipeindex = random.randint(0, len(PIPES_LIST) - 1)
             IMAGES["pipe"] = (
                 pygame.transform.rotate(pygame.image.load(PIPES_LIST[pipeindex]).convert_alpha(), 180),
                 pygame.image.load(PIPES_LIST[pipeindex]).convert_alpha(),
             )
 
-            # hismask for pipes
+            #管道的像素点转换成bool值,知道管道的形状了
             HITMASKS["pipe"] = (getHitmask(IMAGES["pipe"][0]), getHitmask(IMAGES["pipe"][1]))
 
-            # hitmask for player
+            #小鸟的像素点转换成bool值，这样就知道小鸟的形状了
             HITMASKS["player"] = (
                 getHitmask(IMAGES["player"][0]),
                 getHitmask(IMAGES["player"][1]),
@@ -196,9 +204,11 @@ def main():
                 with open("data/hitmasks_data.pkl", "wb") as output:
                     pickle.dump(HITMASKS, output, pickle.HIGHEST_PROTOCOL)
                 sys.exit()
-
+        # 欢迎页面的信息  {'playery': 244, 'basex': 0, 'playerIndexGen': <itertools.cycle object at 0x7ffbb03aaa80>}
         movementInfo = showWelcomeAnimation()
+        #开始游戏，返回crash的信息
         crashInfo = mainGame(movementInfo)
+        #游戏结束了
         showGameOverScreen(crashInfo)
 
 def showDebugInfo(x, y, vel, pipe):
@@ -213,14 +223,15 @@ def showDebugInfo(x, y, vel, pipe):
         SCREEN.blit(data, (0, 20*no))
 
 def showWelcomeAnimation():
-    """Shows welcome screen animation of flappy bird"""
+    """显示flappy鸟的欢迎屏幕动画"""
     # index of player to blit on screen
     playerIndex = 0
     playerIndexGen = cycle([0, 1, 2, 1])
-    # iterator used to change playerIndex after every 5th iteration
+    # 迭代器用于每5次迭代后改变playerIndex。
     loopIter = 0
-
+    #计算出小鸟的位置
     playerx = int(SCREENWIDTH * 0.2)
+    # IMAGES_INFO包含小鸟，管道，地面和背景的尺寸
     playery = int((SCREENHEIGHT - IMAGES_INFO["player"][0][HEIGHT]) / 2)
 
     if MODE != Mode.TRAIN_NOUI:
@@ -228,14 +239,14 @@ def showWelcomeAnimation():
         messagey = int(SCREENHEIGHT * 0.12)
 
     basex = 0
-    # amount by which base can maximum shift to left
+    # 计算出地面左移的数量
     baseShift = IMAGES_INFO["base"][WIDTH] - IMAGES_INFO["background"][WIDTH]
 
-    # player shm for up-down motion on welcome screen
+    # player shm 播屏幕上的上下动作
     playerShmVals = {"val": 0, "dir": 1}
 
     while True:
-        """ De-activated the press key functionality"""
+        """ 取消了按压键functionality"""
 
         if MODE != Mode.NORMAL:
             if MODE != Mode.TRAIN_NOUI:
@@ -304,20 +315,24 @@ def updateQtable(score):
 
 import copy
 def mainGame(movementInfo):
-
+    """
+    开始游戏
+    :param movementInfo: 起始的画面信息
+    :return:
+    """
     score = playerIndex = loopIter = 0
     playerIndexGen = movementInfo["playerIndexGen"]
-
+    #小鸟的位置
     playerx, playery = int(SCREENWIDTH * 0.2), movementInfo["playery"]
-
+    # 地面的位置和地面移动的位置， eg: basex: 0,  baseShift:48
     basex = movementInfo["basex"]
     baseShift = IMAGES_INFO["base"][WIDTH] - IMAGES_INFO["background"][WIDTH]
 
-    # get 2 new pipes to add to upperPipes lowerPipes list
+    # 获取2个新管道添加到 upperPipes lowerPipes 列表中。eg: [{'x': 298, 'y': -202}, {'x': 298, 'y': 218}]
     newPipe1 = getRandomPipe()
     newPipe2 = getRandomPipe()
 
-    # list of upper pipes
+    # list of upper pipes， eg:  {dict: 2} {'x': 488, 'y': -202} 和 {dict: 2} {'x': 632.0, 'y': -131}
     upperPipes = [
         {"x": SCREENWIDTH + 200, "y": newPipe1[0]["y"]},
         {"x": SCREENWIDTH + 200 + (SCREENWIDTH / 2), "y": newPipe2[0]["y"]},
@@ -328,38 +343,40 @@ def mainGame(movementInfo):
         {"x": SCREENWIDTH + 200, "y": newPipe1[1]["y"]},
         {"x": SCREENWIDTH + 200 + (SCREENWIDTH / 2), "y": newPipe2[1]["y"]},
     ]
-
+    #管道的默认速度
     pipeVelX = -4
 
-    # player velocity, max velocity, downward accleration, accleration on flap
-    playerVelY = -9  # player's velocity along Y, default same as playerFlapped
-    playerMaxVelY = 10  # max vel along Y, max descend speed
-    playerMinVelY = -8  # min vel along Y, max ascend speed
-    playerAccY = 1  # players downward accleration
-    playerFlapAcc = -9  # players speed on flapping
-    playerFlapped = False  # True when player flaps
-
+    # 小鸟速度、最大速度、向下加速度、向上拍翼加速度。
+    playerVelY = -9  # 沿Y方向的速度，默认与PlayerFlapped相同。
+    playerMaxVelY = 10  # 沿Y方向最大速度，最大下降速度
+    playerMinVelY = -8  #沿Y的最小速度，最大上升速度
+    playerAccY = 1  # 小鸟的下降的加速度
+    playerFlapAcc = -9  # 小鸟的飞行速度，即扇动速度
+    playerFlapped = False  # 当小鸟扇动翅膀时为真
+    #打印分数
     printHighScore = False
-
-    stateHistory = []   # record last 50 state for restart
+    #用于记录最后50个状态，当重新开始的时候
+    stateHistory = []
     replayGame = False
     restartGame = False
     steps = 0
     refreshCount = 1
+    #开始玩游戏
     while True:
-
         if MODE != Mode.TRAIN_NOUI:
+            #刷新次数更新
             if MODE == Mode.TRAIN_REPLAY and not replayGame and not restartGame:
                 refreshCount += 1
 
             if MODE != Mode.TRAIN_REPLAY or refreshCount % 5000 == 0 or replayGame or restartGame:
                 if refreshCount % 5000 == 0:
                     refreshCount = 1
-
+                # event: <Event(4352-AudioDeviceAdded {'which': 0, 'iscapture': 0})>, type=4352
                 for event in pygame.event.get():
                     if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                         pygame.quit()
                         sys.exit()
+                    # KEYDOWN: 768, 事件类型等于按键下
                     if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
                         if playery > -2 * IMAGES["player"][0].get_height():
                             playerVelY = playerFlapAcc
@@ -379,9 +396,7 @@ def mainGame(movementInfo):
                 "playerVelY": playerVelY,
             }
             (playerx, playery, playerVelY, lowerPipes, upperPipes, score, playerIndex) = stateHistory[steps]
-
         else:
-            
             if MODE in [Mode.TRAIN_NOUI, Mode.TRAIN, Mode.TRAIN_REPLAY] and RESUME_ONCRASH: 
                 currentState = [playerx, playery, playerVelY, copy.deepcopy(lowerPipes), copy.deepcopy(upperPipes), score, playerIndex]
                 if restartGame and steps < len(stateHistory):
@@ -390,15 +405,16 @@ def mainGame(movementInfo):
                     stateHistory.append(currentState)
                     if len(stateHistory) > 50:
                         stateHistory.pop(0)
-            
+            #当不是用户玩游戏的模式时，我们然机器人操作小鸟，playerx: 57, playery: 244, playerVelY: -9，在Y方向的速度, lowerPipes: [{'x': 488, 'y': 216}, {'x': 632.0, 'y': 210}]下方管道
             if MODE != Mode.NORMAL and bot.act(playerx, playery, playerVelY, lowerPipes):
                 if playery > -2 * IMAGES_INFO["player"][0][HEIGHT]:
                     playerVelY = playerFlapAcc
+                    # 小鸟挥动翅膀
                     playerFlapped = True
                     if MODE != Mode.TRAIN_NOUI and MODE != Mode.TRAIN_REPLAY:
                         SOUNDS["wing"].play()
 
-       # check for crash here
+       # 小鸟采取了行动，现在开始, 判断是否撞击了，eg: [False, False]表示小鸟存活
         crashTest = checkCrash(
             {"x": playerx, "y": playery, "index": playerIndex}, upperPipes, lowerPipes
         )
@@ -444,21 +460,22 @@ def mainGame(movementInfo):
                 "playerVelY": playerVelY,
             }
 
-        # check for score
+        #判断分数, playerMidPos 小鸟的位置
         playerMidPos = playerx + IMAGES_INFO["player"][0][WIDTH] / 2
         for pipe in upperPipes:
+            #当小鸟的位置和管道的位置相距一定距离时，我们给它加一定分数,  小鸟超过一个管道，那么我们给它加1分
             pipeMidPos = pipe["x"] + IMAGES_INFO["pipe"][WIDTH] / 2
             if pipeMidPos <= playerMidPos < pipeMidPos + 4:
                 score += 1
                 printHighScore = True
                 if MODE not in [Mode.TRAIN_NOUI, Mode.TRAIN_REPLAY]:
                     SOUNDS["point"].play()
-                if score >= MAX_SCORE:    # terminate game if reach maxium score and restart game
+                if score >= MAX_SCORE:    #最大得分时终止游戏和重启游戏
                     bot.terminate_game()
                     return {
                         "score": score,
                     }
-
+        #当在训练模式时
         if MODE in [Mode.TRAIN_NOUI, Mode.TRAIN, Mode.TRAIN_REPLAY] and printHighScore and score != 0 and score % 10000==0:
             print("Game " + str(bot.gameCNT+1) + ": reach " + str(score) + "...")
             printHighScore = False
@@ -469,12 +486,15 @@ def mainGame(movementInfo):
         loopIter = (loopIter + 1) % 30
         basex = -((-basex + 100) % baseShift)
 
-        # player's movement
+        #小鸟移动
         if playerVelY < playerMaxVelY and not playerFlapped:
             playerVelY += playerAccY
+        #如果小鸟煽动翅膀, 煽动一次翅膀后，我们就不删动翅膀了，只需要煽动一次
         if playerFlapped:
             playerFlapped = False
+        #小鸟的初始的高度
         playerHeight = IMAGES_INFO["player"][playerIndex][HEIGHT]
+        #小鸟现在的高度
         playery += min(playerVelY, BASEY - playery - playerHeight)
 
         addPipes = True
@@ -487,37 +507,38 @@ def mainGame(movementInfo):
                 restartGame = False
 
         if not replayGame and addPipes:
-             # move pipes to left
+             # 移动管道，管道在横轴方向移动
             for uPipe, lPipe in zip(upperPipes, lowerPipes):
                 uPipe["x"] += pipeVelX
                 lPipe["x"] += pipeVelX
 
-           # add new pipe when first pipe is about to touch left of screen
+           # 第一个管道即将触及屏幕左侧时添加新管道
             if 0 < upperPipes[0]["x"] < 5:
                 newPipe = getRandomPipe()
                 upperPipes.append(newPipe[0])
                 lowerPipes.append(newPipe[1])
 
-            # remove first pipe if its out of the screen
+            # 如果管道跑出了屏幕，移除管道
             if upperPipes[0]["x"] < -IMAGES_INFO["pipe"][WIDTH]:
                 upperPipes.pop(0)
                 lowerPipes.pop(0)
 
         if MODE not in [Mode.TRAIN_NOUI, Mode.TRAIN_REPLAY] or (MODE == Mode.TRAIN_REPLAY and (restartGame or replayGame)):
-            # draw sprites
+            # 绘制背景
             SCREEN.blit(IMAGES["background"], (0, 0))
-
+            # 然后绘制管道
             for uPipe, lPipe in zip(upperPipes, lowerPipes):
                 SCREEN.blit(IMAGES["pipe"][0], (uPipe["x"], uPipe["y"]))
                 SCREEN.blit(IMAGES["pipe"][1], (lPipe["x"], lPipe["y"]))
-
+            #然后绘制地面
             SCREEN.blit(IMAGES["base"], (basex, BASEY))
-            # print score so player overlaps the score
+            # 打印分数, score: int, 在游戏画面上显示分数
             showScore(score)
+            # 把小鸟也画到游戏上，playerx, playery代表小鸟的位置
             SCREEN.blit(IMAGES["player"][playerIndex], (playerx, playery))
             if MODE == Mode.TRAIN_REPLAY:
                 showDebugInfo(playerx, playery, playerVelY, lowerPipes)
-
+            #更新下pygame的游戏画面
             pygame.display.update()
             FPSCLOCK.tick(FPS)
 
@@ -547,12 +568,15 @@ def showPerformance():
     plt.show()
 
 def showGameOverScreen(crashInfo):
-
+    """
+    游戏结束
+    :param crashInfo:
+    :return:
+    """
     updateQtable(crashInfo["score"])
     if MODE != Mode.NORMAL and MODE != Mode.PLAYER_AI:
         return
-
-    """crashes the player down and shows gameover image"""
+    # 使player crashed并显示游戏结束画面
     score = crashInfo["score"]
     playerx = SCREENWIDTH * 0.2
     playery = crashInfo["y"]
@@ -564,7 +588,7 @@ def showGameOverScreen(crashInfo):
 
     upperPipes, lowerPipes = crashInfo["upperPipes"], crashInfo["lowerPipes"]
 
-    # play hit and die sounds
+    # 播放hit和die的声音
     SOUNDS["hit"].play()
     if not crashInfo["groundCrash"]:
         SOUNDS["die"].play()
@@ -573,7 +597,7 @@ def showGameOverScreen(crashInfo):
     gameovery = int(SCREENHEIGHT * 0.4)
 
     while True:
-        """ De-activated press key functionality """
+        # 取消激活的按压键functionality
         for event in pygame.event.get():
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()
@@ -582,13 +606,14 @@ def showGameOverScreen(crashInfo):
                 if playery + playerHeight >= BASEY - 1:
                     return
         
-        #return  ### Must remove to activate press-key functionality
+        #return
+        # 必须移除才能激活按键functionality
 
         # player y shift
         if playery + playerHeight < BASEY - 1:
             playery += min(playerVelY, BASEY - playery - playerHeight)
 
-        # player velocity change
+        # player 速度变化
         if playerVelY < 15:
             playerVelY += playerAccY
 
@@ -609,7 +634,11 @@ def showGameOverScreen(crashInfo):
 
 
 def playerShm(playerShm):
-    """oscillates the value of playerShm['val'] between 8 and -8"""
+    """
+    使playerShm['val']的值在8和-8之间摆动。
+    :param playerShm:
+    :return:
+    """
     if abs(playerShm["val"]) == 8:
         playerShm["dir"] *= -1
 
@@ -619,63 +648,74 @@ def playerShm(playerShm):
         playerShm["val"] -= 1
 
 def getRandomPipe():
-    """returns a randomly generated pipe"""
-    # y of gap between upper and lower pipe
+    """返回一组随机生成的管道，上下管道"""
+    # 上下管之间的间隙是 y， gapY是 随机的0到，地面和 管道上部和下部之间的间隙 的一个随机值
     gapY = random.randrange(0, int(BASEY * 0.6 - PIPEGAPSIZE))
     gapY += int(BASEY * 0.2)
     pipeHeight = IMAGES_INFO["pipe"][HEIGHT]
     pipeX = SCREENWIDTH + 10
 
     return [
-        {"x": pipeX, "y": gapY - pipeHeight},  # upper pipe
-        {"x": pipeX, "y": gapY + PIPEGAPSIZE},  # lower pipe
+        {"x": pipeX, "y": gapY - pipeHeight},  # 上面的管道
+        {"x": pipeX, "y": gapY + PIPEGAPSIZE},  # 下面的管道
     ]
 
 
 def showScore(score):
-    """displays score in center of screen"""
+    """
+    在屏幕中心显示得分
+    :param score: 分数  int
+    :return:
+    """
     scoreDigits = [int(x) for x in list(str(score))]
-    totalWidth = 0  # total width of all numbers to be printed
-
+    totalWidth = 0  # 要打印的所有数字的总宽度
+    # scoreDigits里面进有一个数字时，例如0分，那么需要的显示宽度为： 24
     for digit in scoreDigits:
         totalWidth += IMAGES["numbers"][digit].get_width()
-
+    #分数的位置
     Xoffset = (SCREENWIDTH - totalWidth) / 2
-
+    #把分数画到游戏上
     for digit in scoreDigits:
         SCREEN.blit(IMAGES["numbers"][digit], (Xoffset, SCREENHEIGHT * 0.1))
         Xoffset += IMAGES["numbers"][digit].get_width()
 
 
 def checkCrash(player, upperPipes, lowerPipes):
-    """returns True if player collders with base or pipes."""
+    """
+    如果player与地面或管道相撞，则返回True。
+    :param player: player信息 eg: {'x': 57, 'y': 244, 'index': 0, 'w': 34, 'h': 24}
+    :param upperPipes: 上面管道 [{'x': 488, 'y': 198}, {'x': 632.0, 'y': 219}]
+    :param lowerPipes: 下面管道 [{'x': 488, 'y': -222}, {'x': 632.0, 'y': -201}]
+    :return:如果玩家撞到地面,[True, True],撞到管道[True, False]，没有撞到任何东西[False, False]
+    """
     pi = player["index"]
     player["w"] = IMAGES_INFO["player"][0][WIDTH]
     player["h"] = IMAGES_INFO["player"][0][HEIGHT]
 
-    # if player crashes into ground
+    # 如果玩家撞到地面
     if (player["y"] + player["h"] >= BASEY - 1) or (player["y"] + player["h"] <= 0):
         return [True, True]
     else:
-
+        #创建一个Rect对象
         playerRect = pygame.Rect(player["x"], player["y"], player["w"], player["h"])
+        # 管道的宽和高
         pipeW = IMAGES_INFO["pipe"][WIDTH]
         pipeH = IMAGES_INFO["pipe"][HEIGHT]
 
         for uPipe, lPipe in zip(upperPipes, lowerPipes):
-            # upper and lower pipe rects
+            # 创建上和下的管道rect对象
             uPipeRect = pygame.Rect(uPipe["x"], uPipe["y"], pipeW, pipeH)
             lPipeRect = pygame.Rect(lPipe["x"], lPipe["y"], pipeW, pipeH)
 
-            # player and upper/lower pipe hitmasks
+            # 小鸟和上下管道的bool值的对象位置hitmasks， pHitMask（ 34，24），uHitmask 和lHitmask（52， 320）
             pHitMask = HITMASKS["player"][pi]
             uHitmask = HITMASKS["pipe"][0]
             lHitmask = HITMASKS["pipe"][1]
 
-            # if bird collided with upipe or lpipe
+            # 是否小鸟和上下管道相撞，返回bool值，eg: uCollide: False
             uCollide = pixelCollision(playerRect, uPipeRect, pHitMask, uHitmask)
             lCollide = pixelCollision(playerRect, lPipeRect, pHitMask, lHitmask)
-
+            #如果任何一个相撞了，那么返回
             if uCollide or lCollide:
                 return [True, False]
 
@@ -683,7 +723,15 @@ def checkCrash(player, upperPipes, lowerPipes):
 
 
 def pixelCollision(rect1, rect2, hitmask1, hitmask2):
-    """Checks if two objects collide and not just their rects"""
+    """
+    判断2个目标是否相撞，而不是仅仅通过他们的Rects矩阵范围判断
+    :param rect1: <rect(57, 244, 34, 24)>， 这个例子宽和高为34和24
+    :param rect2: <rect(488, -153, 52, 320)>
+    :param hitmask1: bool shape (34,24)
+    :param hitmask2: bool shape (52,320)
+    :return:
+    """
+    #一个矩形和另一个矩形相减，看是否重叠, eg: <rect(57, 244, 0, 0)>, 这个例子宽和高都为0
     rect = rect1.clip(rect2)
 
     if rect.width == 0 or rect.height == 0:
@@ -700,7 +748,12 @@ def pixelCollision(rect1, rect2, hitmask1, hitmask2):
 
 
 def getHitmask(image):
-    """returns a hitmask using an image's alpha."""
+    """
+    使用图像的alpha返回一个hitmask。即物体的像素的形状的bool值
+    :param image: <Surface(52x320x32 SW)>, 图像的宽度是52
+    :return:
+    """
+    # mask存储在图像每个宽和高的像素点的最后一个维度 image.get_at((x, y))--> (255, 255, 255, 0)的信息，如果为0，那么就为False, 否则为True, 应该判断的是不是有障碍物
     mask = []
     for x in range(image.get_width()):
         mask.append([])
