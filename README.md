@@ -1,5 +1,5 @@
 
-# 使用强化学习来训练一只永远不死的飞鸟。 
+# 使用Q table强化学习来训练一只永远不死的飞鸟。 
 
 ### [Use reinforcement learning to train a flappy bird NEVER to die](https://towardsdatascience.com/use-reinforcement-learning-to-train-a-flappy-bird-never-to-die-35b9625aaecc)
 
